@@ -135,55 +135,58 @@
     const API_URL = 'https://alter-ai.ruslan-akhmedov-2005.workers.dev';
     const XP_PER_LEVEL = 100;
 
-    // ============ ПОЛЬЗОВАТЕЛЬ ============
-    const savedUser = localStorage.getItem('alter_user');
-    let user = { name: 'друг', profession: 'medicine', role: 'student', course: '3', gender: 'male' };
-    if (savedUser) { try { user = { ...user, ...JSON.parse(savedUser) }; } catch(e) {} }
+    // ============ ХРАНИЛИЩЕ: CloudStorage + localStorage fallback ============
+    function storageGet(key) {
+      return new Promise((resolve) => {
+        if (tg && tg.CloudStorage) {
+          tg.CloudStorage.getItem(key, (err, value) => {
+            if (!err && value) { resolve(value); }
+            else { resolve(localStorage.getItem(key)); }
+          });
+        } else {
+          resolve(localStorage.getItem(key));
+        }
+      });
+    }
 
-    // ============ ПРОГРЕСС ============
+    function storageSet(key, value) {
+      return new Promise((resolve) => {
+        if (tg && tg.CloudStorage) {
+          tg.CloudStorage.setItem(key, value, () => {
+            localStorage.setItem(key, value); // дублируем в localStorage
+            resolve();
+          });
+        } else {
+          localStorage.setItem(key, value);
+          resolve();
+        }
+      });
+    }
+
+    // ============ СОСТОЯНИЕ ============
+    let user = { name: 'друг', profession: 'medicine', role: 'student', course: '3', gender: 'male' };
+    let progress = {
+      xp: 0, level: 1, streak: 0, lastActiveDate: null,
+      daily: { date: '', done: [] },
+      stats: { tasks_total: 0, tasks_correct: 0 }
+    };
+    let customDisciplines = [];
+
     function todayStr() { return new Date().toISOString().split('T')[0]; }
     function yesterdayStr() {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
+      const d = new Date(); d.setDate(d.getDate() - 1);
       return d.toISOString().split('T')[0];
     }
 
-    function loadProgress() {
-      const raw = localStorage.getItem('alter_progress');
-      if (raw) {
-        try {
-          const p = JSON.parse(raw);
-          if (p.daily && p.daily.date !== todayStr()) {
-            p.daily = { date: todayStr(), done: [] };
-            localStorage.setItem('alter_progress', JSON.stringify(p));
-          }
-          return p;
-        } catch(e) {}
-      }
-      return {
-        xp: 0,
-        level: 1,
-        streak: 0,
-        lastActiveDate: null,
-        daily: { date: todayStr(), done: [] },
-        stats: { tasks_total: 0, tasks_correct: 0 }
-      };
-    }
-
-    let progress = loadProgress();
-
     function saveProgress() {
-      localStorage.setItem('alter_progress', JSON.stringify(progress));
+      storageSet('alter_progress', JSON.stringify(progress));
     }
 
     function updateStreak() {
       const today = todayStr();
       if (progress.lastActiveDate === today) return;
-      if (progress.lastActiveDate === yesterdayStr()) {
-        progress.streak++;
-      } else {
-        progress.streak = 1;
-      }
+      if (progress.lastActiveDate === yesterdayStr()) progress.streak++;
+      else progress.streak = 1;
       progress.lastActiveDate = today;
     }
 
@@ -194,13 +197,6 @@
       saveProgress();
       renderTopBar();
     }
-
-    // ============ КАСТОМНЫЕ ДИСЦИПЛИНЫ ============
-    let customDisciplines = [];
-    try {
-      const c = localStorage.getItem('alter_custom_disciplines');
-      if (c) customDisciplines = JSON.parse(c);
-    } catch(e) {}
 
     // ============ БАЗА ДИСЦИПЛИН ============
     const disciplinesByProfession = {
@@ -264,21 +260,7 @@
       ]
     };
 
-    // ============ ШАПКА ============
-    document.getElementById('userName').textContent = user.name;
-    const profMap = { medicine: 'Медик', dentistry: 'Стоматолог', law: 'Юрист', it: 'IT-специалист', economics: 'Экономист', other: 'Специалист' };
-    const roleMap = { school: 'Школьник', student: 'Студент', work: 'Специалист' };
-    const courseMap = { '1': '1 курс', '2': '2 курс', '3': '3 курс', '4': '4 курс', '5': '5-6 курс' };
-    const prof = profMap[user.profession] || '';
-    const role = roleMap[user.role] || '';
-    const courseStr = user.role === 'student' && user.course ? ' · ' + (courseMap[user.course] || '') : '';
-    document.getElementById('userLevel').textContent = ([role, prof].filter(Boolean).join(' · ') + courseStr).replace(/^ · /, '') || 'Твой Альтер';
-
-    if (user.gender === 'female') {
-      document.getElementById('character').src = 'charactel_female.png.png';
-    }
-    document.getElementById('bubble').textContent = `Привет, ${user.name}! Готов начать день?`;
-
+    // ============ ЭЛЕМЕНТЫ ============
     const levelCounter = document.getElementById('levelCounter');
     const xpCounter = document.getElementById('xpCounter');
     const streakCounter = document.getElementById('streakCounter');
@@ -313,6 +295,21 @@
           habit.querySelector('.habit-check').textContent = '';
         }
       });
+    }
+
+    function renderUser() {
+      document.getElementById('userName').textContent = user.name;
+      const profMap = { medicine: 'Медик', dentistry: 'Стоматолог', law: 'Юрист', it: 'IT-специалист', economics: 'Экономист', other: 'Специалист' };
+      const roleMap = { school: 'Школьник', student: 'Студент', work: 'Специалист' };
+      const courseMap = { '1': '1 курс', '2': '2 курс', '3': '3 курс', '4': '4 курс', '5': '5-6 курс' };
+      const prof = profMap[user.profession] || '';
+      const role = roleMap[user.role] || '';
+      const courseStr = user.role === 'student' && user.course ? ' · ' + (courseMap[user.course] || '') : '';
+      document.getElementById('userLevel').textContent = ([role, prof].filter(Boolean).join(' · ') + courseStr).replace(/^ · /, '') || 'Твой Альтер';
+      if (user.gender === 'female') {
+        document.getElementById('character').src = 'charactel_female.png.png';
+      }
+      bubble.textContent = `Привет, ${user.name}! Готов начать день?`;
     }
 
     // ============ ОБЫЧНЫЕ ПРИВЫЧКИ ============
@@ -398,7 +395,7 @@
         const value = 'custom_' + Date.now();
         const newDisc = { value, label: val, icon: '📌', custom: true };
         customDisciplines.push(newDisc);
-        localStorage.setItem('alter_custom_disciplines', JSON.stringify(customDisciplines));
+        storageSet('alter_custom_disciplines', JSON.stringify(customDisciplines));
         showDisciplineSelector();
         setTimeout(() => {
           const newBtn = document.querySelector(`.discipline-item[data-value="${value}"]`);
@@ -494,8 +491,43 @@
     }
 
     // ============ ИНИЦИАЛИЗАЦИЯ ============
-    renderTopBar();
-    renderHabits();
+    async function init() {
+      // Загружаем пользователя
+      const savedUser = await storageGet('alter_user');
+      if (savedUser) {
+        try { user = { ...user, ...JSON.parse(savedUser) }; } catch(e) {}
+      }
+
+      // Загружаем прогресс
+      const savedProgress = await storageGet('alter_progress');
+      if (savedProgress) {
+        try {
+          const p = JSON.parse(savedProgress);
+          // Если новый день — сбрасываем галочки
+          if (p.daily && p.daily.date !== todayStr()) {
+            p.daily = { date: todayStr(), done: [] };
+            await storageSet('alter_progress', JSON.stringify(p));
+          }
+          progress = { ...progress, ...p };
+        } catch(e) {}
+      } else {
+        progress.daily.date = todayStr();
+        await storageSet('alter_progress', JSON.stringify(progress));
+      }
+
+      // Загружаем кастомные дисциплины
+      const savedCustom = await storageGet('alter_custom_disciplines');
+      if (savedCustom) {
+        try { customDisciplines = JSON.parse(savedCustom); } catch(e) {}
+      }
+
+      // Отрисовка
+      renderUser();
+      renderTopBar();
+      renderHabits();
+    }
+
+    init();
   </script>
 </body>
 </html>
