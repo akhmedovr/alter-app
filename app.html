@@ -38,6 +38,30 @@
     .bubble { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); background: #fff; color: #222; padding: 10px 16px; border-radius: 18px; font-size: 14px; font-weight: 500; z-index: 8; max-width: 240px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: bubbleIn 0.5s ease-out; }
     @keyframes bubbleIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
     .bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #fff; }
+
+    /* Модальное окно с AI-задачей */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; opacity: 0; transition: opacity 0.3s ease; }
+    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal { background: #1f1a2e; border-radius: 24px; padding: 24px; max-width: 400px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid rgba(255,209,102,0.2); animation: modalIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: 700; color: #FFD166; }
+    .modal-close { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .modal-loading { text-align: center; padding: 40px 20px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,209,102,0.2); border-top-color: #FFD166; border-radius: 50%; margin: 0 auto 16px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: rgba(255,255,255,0.6); font-size: 14px; }
+    .task-question { font-size: 16px; line-height: 1.5; margin-bottom: 20px; color: #fff; }
+    .task-options { display: flex; flex-direction: column; gap: 10px; }
+    .task-option { background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px 16px; font-size: 15px; color: #fff; cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: inherit; }
+    .task-option:active { transform: scale(0.98); }
+    .task-option.correct { background: rgba(76,175,80,0.3); border-color: #4CAF50; }
+    .task-option.wrong { background: rgba(244,67,54,0.3); border-color: #f44336; }
+    .task-option:disabled { cursor: not-allowed; }
+    .task-explanation { margin-top: 20px; padding: 16px; background: rgba(255,209,102,0.1); border-radius: 14px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.9); border-left: 3px solid #FFD166; }
+    .task-result { text-align: center; margin-top: 16px; font-size: 16px; font-weight: 700; }
+    .task-result.correct { color: #4CAF50; }
+    .task-result.wrong { color: #f44336; }
   </style>
 </head>
 <body>
@@ -45,7 +69,7 @@
     <img src="room.png%202.png" alt="" class="room-bg">
     <div class="top-bar">
       <div class="stat">🏆 Ур. 5</div>
-      <div class="stat">⭐ 1250 XP</div>
+      <div class="stat">⭐ <span id="xpCounter">1250</span> XP</div>
       <div class="stat">🔥 7 дней</div>
     </div>
     <div class="title-block">
@@ -63,8 +87,8 @@
         <div class="habit-left"><div class="habit-icon">🏃</div><div class="habit-info"><div class="habit-title">10 приседаний</div><div class="habit-subtitle">2 минуты</div></div></div>
         <div class="habit-check"></div>
       </div>
-      <div class="habit" data-xp="15">
-        <div class="habit-left"><div class="habit-icon">📖</div><div class="habit-info"><div class="habit-title">Клиническая задача</div><div class="habit-subtitle">Фармакология · 3 минуты</div></div></div>
+      <div class="habit" id="taskHabit" data-xp="15">
+        <div class="habit-left"><div class="habit-icon">📖</div><div class="habit-info"><div class="habit-title">Клиническая задача</div><div class="habit-subtitle">AI · 3 минуты</div></div></div>
         <div class="habit-check"></div>
       </div>
       <div class="habit" data-xp="10">
@@ -74,44 +98,44 @@
     </div>
     <div class="xp-popup" id="xpPopup"></div>
   </div>
+
+  <!-- Модальное окно AI-задачи -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">📖 AI-задача</div>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
   <script>
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor?.('#1a1524'); }
 
-    // Загружаем пользователя из localStorage
-    const saved = localStorage.getItem('alter_user');
-    let userName = 'друг';
-    let userProfession = '';
-    let userRole = '';
-    let userGender = 'male';
+    // API endpoint
+    const API_URL = 'https://alter-ai.ruslan-akhmedov-2005.workers.dev';
 
+    // Пользователь
+    const saved = localStorage.getItem('alter_user');
+    let user = { name: 'друг', profession: 'medicine', role: 'student', gender: 'male' };
     if (saved) {
-      try {
-        const user = JSON.parse(saved);
-        userName = user.name || 'друг';
-        userProfession = user.profession || '';
-        userRole = user.role || '';
-        userGender = user.gender || 'male';
-      } catch(e) {}
+      try { user = { ...user, ...JSON.parse(saved) }; } catch(e) {}
     }
 
-    // Подставляем имя
-    document.getElementById('userName').textContent = userName;
-
-    // Подставляем профессию
+    document.getElementById('userName').textContent = user.name;
     const profMap = { medicine: 'Медик', dentistry: 'Стоматолог', law: 'Юрист', it: 'IT-специалист', economics: 'Экономист', other: 'Специалист' };
     const roleMap = { school: 'Школьник', student: 'Студент', work: 'Специалист' };
-    const prof = profMap[userProfession] || '';
-    const role = roleMap[userRole] || '';
+    const prof = profMap[user.profession] || '';
+    const role = roleMap[user.role] || '';
     document.getElementById('userLevel').textContent = [role, prof].filter(Boolean).join(' · ') || 'Твой Альтер';
 
-    // Подставляем персонажа
-    if (userGender === 'female') {
+    if (user.gender === 'female') {
       document.getElementById('character').src = 'charactel_female.png.png';
     }
 
-    // Реплика персонажа с именем
-    document.getElementById('bubble').textContent = `Привет, ${userName}! Готов начать день?`;
+    document.getElementById('bubble').textContent = `Привет, ${user.name}! Готов начать день?`;
 
     let totalXp = 1250;
     let completedCount = 0;
@@ -119,17 +143,19 @@
     const habits = document.querySelectorAll('.habit');
     const xpPopup = document.getElementById('xpPopup');
     const progressFill = document.getElementById('progressFill');
+    const xpCounter = document.getElementById('xpCounter');
     const bubble = document.getElementById('bubble');
 
     const phrases = [
-      `Отличная работа, ${userName}!`,
+      `Отличная работа, ${user.name}!`,
       'Я чувствую, как мы растём!',
       'Так держать!',
       'Ещё немного — и новый уровень!',
       'Спасибо, что не забыл про меня.'
     ];
 
-    habits.forEach(habit => {
+    // Обычные привычки
+    document.querySelectorAll('.habit:not(#taskHabit)').forEach(habit => {
       habit.addEventListener('click', () => {
         if (habit.classList.contains('done')) return;
         habit.classList.add('done');
@@ -146,6 +172,122 @@
       });
     });
 
+    // ===== AI-ЗАДАЧА =====
+    const taskHabit = document.getElementById('taskHabit');
+    const modal = document.getElementById('taskModal');
+    const modalBody = document.getElementById('modalBody');
+    const modalClose = document.getElementById('modalClose');
+
+    taskHabit.addEventListener('click', async () => {
+      if (taskHabit.classList.contains('done')) return;
+      openModal();
+      showLoading();
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            profession: user.profession || 'medicine',
+            topic: ''
+          })
+        });
+        if (!response.ok) throw new Error('API error');
+        const task = await response.json();
+        showTask(task);
+      } catch (e) {
+        modalBody.innerHTML = `
+          <div style="text-align:center;padding:20px;color:#f44336;">
+            ⚠️ Не удалось загрузить задачу.<br>
+            <span style="font-size:12px;opacity:0.7;">${e.message}</span>
+          </div>
+          <button class="task-option" onclick="closeModal()">Закрыть</button>
+        `;
+      }
+    });
+
+    function openModal() {
+      modal.classList.add('active');
+      if (tg) tg.BackButton?.show?.();
+      tg.BackButton?.onClick?.(closeModal);
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      tg.BackButton?.hide?.();
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    function showLoading() {
+      modalBody.innerHTML = `
+        <div class="modal-loading">
+          <div class="spinner"></div>
+          <div class="loading-text">AI готовит задачу...</div>
+        </div>
+      `;
+    }
+
+    function showTask(task) {
+      const optionsHtml = task.options.map((opt, i) => `
+        <button class="task-option" data-index="${i}">${opt}</button>
+      `).join('');
+
+      modalBody.innerHTML = `
+        <div class="task-question">${task.question}</div>
+        <div class="task-options" id="taskOptions">
+          ${optionsHtml}
+        </div>
+        <div id="taskResult"></div>
+      `;
+
+      document.querySelectorAll('.task-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index);
+          checkAnswer(idx, task);
+        });
+      });
+    }
+
+    function checkAnswer(userIdx, task) {
+      const options = document.querySelectorAll('.task-option');
+      const result = document.getElementById('taskResult');
+      const isCorrect = userIdx === task.correct;
+
+      options.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === task.correct) btn.classList.add('correct');
+        else if (i === userIdx && !isCorrect) btn.classList.add('wrong');
+      });
+
+      if (isCorrect) {
+        result.innerHTML = `
+          <div class="task-result correct">✓ Правильно!</div>
+          <div class="task-explanation">${task.explanation || ''}</div>
+        `;
+        // Награда
+        taskHabit.classList.add('done');
+        taskHabit.querySelector('.habit-check').textContent = '✓';
+        const xp = task.xp || 15;
+        totalXp += xp;
+        completedCount++;
+        showXpPopup(xp);
+        updateProgress();
+        xpCounter.textContent = totalXp;
+        bubble.textContent = `Правильно! +${xp} XP`;
+        bubble.style.animation = 'none';
+        setTimeout(() => { bubble.style.animation = 'bubbleIn 0.5s ease-out'; }, 10);
+      } else {
+        result.innerHTML = `
+          <div class="task-result wrong">✗ Неправильно</div>
+          <div class="task-explanation">${task.explanation || ''}</div>
+        `;
+      }
+    }
+
+    // ===== ОБЩИЕ ФУНКЦИИ =====
     function showXpPopup(xp) {
       xpPopup.textContent = `+${xp} XP`;
       xpPopup.classList.remove('show');
@@ -156,6 +298,7 @@
     function updateProgress() {
       const percent = 20 + (completedCount / totalHabits) * 40;
       progressFill.style.width = percent + '%';
+      xpCounter.textContent = totalXp;
     }
   </script>
 </body>
