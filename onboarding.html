@@ -28,21 +28,23 @@
     @keyframes sunGlow { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
     .horizon { position: absolute; bottom: 0; left: 0; right: 0; height: 22%; background: linear-gradient(to top, #0d0a15 0%, rgba(13,10,21,0.9) 50%, transparent 100%); z-index: 2; pointer-events: none; }
     .sunrise-bg::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(13,10,21,0.75) 0%, rgba(13,10,21,0.4) 40%, transparent 100%); z-index: 3; pointer-events: none; }
-    .heading { font-size: 32px; font-weight: 800; line-height: 1.15; text-align: center; margin-bottom: 16px; letter-spacing: -0.5px; text-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .heading { font-size: 30px; font-weight: 800; line-height: 1.15; text-align: center; margin-bottom: 16px; letter-spacing: -0.5px; text-shadow: 0 4px 24px rgba(0,0,0,0.4); }
     .heading .gold { background: linear-gradient(135deg, #FFD166 0%, #FFA94D 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .subtext { font-size: 16px; line-height: 1.5; text-align: center; color: rgba(255,255,255,0.75); margin-bottom: 32px; max-width: 340px; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+    .subtext { font-size: 15px; line-height: 1.5; text-align: center; color: rgba(255,255,255,0.75); margin-bottom: 28px; max-width: 340px; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
     .screen[data-step="0"] { justify-content: flex-start; padding-top: 18vh; }
     .name-input { width: 100%; max-width: 340px; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 18px; padding: 20px 24px; font-size: 18px; color: #fff; outline: none; text-align: center; font-weight: 600; transition: all 0.3s ease; font-family: inherit; }
     .name-input:focus { border-color: rgba(255,209,102,0.5); background: rgba(255,255,255,0.08); box-shadow: 0 0 0 4px rgba(255,209,102,0.08); }
     .name-input::placeholder { color: rgba(255,255,255,0.3); font-weight: 500; }
     .cards { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
     .cards.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .card { background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 18px 20px; font-size: 16px; font-weight: 600; color: #fff; cursor: pointer; transition: all 0.2s cubic-bezier(0.4,0,0.2,1); display: flex; align-items: center; gap: 14px; text-align: left; -webkit-appearance: none; appearance: none; font-family: inherit; }
+    .cards.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .card { background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 16px 18px; font-size: 15px; font-weight: 600; color: #fff; cursor: pointer; transition: all 0.2s cubic-bezier(0.4,0,0.2,1); display: flex; align-items: center; gap: 12px; text-align: left; -webkit-appearance: none; appearance: none; font-family: inherit; }
     .card:active { transform: scale(0.97); background: rgba(255,255,255,0.1); }
     .card.selected { background: linear-gradient(135deg, rgba(255,209,102,0.18) 0%, rgba(255,169,77,0.12) 100%); border-color: rgba(255,209,102,0.6); box-shadow: 0 0 0 3px rgba(255,209,102,0.1), 0 8px 24px rgba(255,169,77,0.15); }
-    .card-icon { font-size: 24px; flex-shrink: 0; }
-    .card.grid-card { flex-direction: column; align-items: center; text-align: center; padding: 22px 12px; gap: 10px; }
-    .card.grid-card .card-icon { font-size: 32px; }
+    .card-icon { font-size: 22px; flex-shrink: 0; }
+    .card.grid-card { flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; gap: 8px; }
+    .card.grid-card .card-icon { font-size: 30px; }
+    .card.grid-card .card-text { font-size: 13px; }
     .gender-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 340px; }
     .gender-card { background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 22px; padding: 20px 12px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
     .gender-card:active { transform: scale(0.97); }
@@ -60,19 +62,18 @@
     .back { position: fixed; top: 20px; left: 20px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.06); border: none; color: #fff; font-size: 20px; cursor: pointer; z-index: 100; display: none; align-items: center; justify-content: center; transition: all 0.2s ease; font-family: inherit; }
     .back:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
     .back.visible { display: flex; }
+    .loading-overlay { position: fixed; inset: 0; background: #1a1524; z-index: 999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(255,209,102,0.2); border-top-color: #FFD166; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div class="bg"></div>
-  <div class="progress" id="progress">
-    <div class="dot" data-step="0"></div>
-    <div class="dot" data-step="1"></div>
-    <div class="dot" data-step="2"></div>
-    <div class="dot" data-step="3"></div>
-    <div class="dot" data-step="4"></div>
-    <div class="dot" data-step="5"></div>
-    <div class="dot" data-step="6"></div>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
   </div>
+
+  <div class="bg"></div>
+  <div class="progress" id="progress"></div>
   <button class="back" id="backBtn">←</button>
 
   <div class="screen active" data-step="0">
@@ -94,7 +95,7 @@
 
   <div class="screen" data-step="2">
     <h1 class="heading">Кто <span class="gold">ты?</span></h1>
-    <p class="subtext">Это поможет подобрать задачи.</p>
+    <p class="subtext">Это поможет подобрать задачи по уровню.</p>
     <div class="cards">
       <button class="card" data-value="school"><span class="card-icon">🎓</span><span>Школьник</span></button>
       <button class="card" data-value="student"><span class="card-icon">📚</span><span>Студент</span></button>
@@ -106,16 +107,28 @@
     <h1 class="heading">Твоя <span class="gold">сфера</span></h1>
     <p class="subtext">Выбери направление, в котором хочешь расти.</p>
     <div class="cards grid">
-      <button class="card grid-card" data-value="medicine"><span class="card-icon">⚕️</span><span>Медицина</span></button>
-      <button class="card grid-card" data-value="dentistry"><span class="card-icon">🦷</span><span>Стоматология</span></button>
-      <button class="card grid-card" data-value="law"><span class="card-icon">⚖️</span><span>Юриспруденция</span></button>
-      <button class="card grid-card" data-value="it"><span class="card-icon">💻</span><span>IT</span></button>
-      <button class="card grid-card" data-value="economics"><span class="card-icon">📊</span><span>Экономика</span></button>
-      <button class="card grid-card" data-value="other"><span class="card-icon">✏️</span><span>Другое</span></button>
+      <button class="card grid-card" data-value="medicine"><span class="card-icon">⚕️</span><span class="card-text">Медицина</span></button>
+      <button class="card grid-card" data-value="dentistry"><span class="card-icon">🦷</span><span class="card-text">Стоматология</span></button>
+      <button class="card grid-card" data-value="law"><span class="card-icon">⚖️</span><span class="card-text">Юриспруденция</span></button>
+      <button class="card grid-card" data-value="it"><span class="card-icon">💻</span><span class="card-text">IT</span></button>
+      <button class="card grid-card" data-value="economics"><span class="card-icon">📊</span><span class="card-text">Экономика</span></button>
+      <button class="card grid-card" data-value="other"><span class="card-icon">✏️</span><span class="card-text">Другое</span></button>
     </div>
   </div>
 
   <div class="screen" data-step="4">
+    <h1 class="heading">Какой <span class="gold">курс?</span></h1>
+    <p class="subtext">Сложность задач будет соответствовать уровню.</p>
+    <div class="cards grid-3">
+      <button class="card grid-card" data-value="1"><span class="card-icon">1️⃣</span><span class="card-text">1 курс</span></button>
+      <button class="card grid-card" data-value="2"><span class="card-icon">2️⃣</span><span class="card-text">2 курс</span></button>
+      <button class="card grid-card" data-value="3"><span class="card-icon">3️⃣</span><span class="card-text">3 курс</span></button>
+      <button class="card grid-card" data-value="4"><span class="card-icon">4️⃣</span><span class="card-text">4 курс</span></button>
+      <button class="card grid-card" data-value="5"><span class="card-icon">5️⃣</span><span class="card-text">5-6 курс</span></button>
+    </div>
+  </div>
+
+  <div class="screen" data-step="5">
     <h1 class="heading">Что хочешь<br><span class="gold">изменить?</span></h1>
     <p class="subtext">Выбери главную цель на ближайший месяц.</p>
     <div class="cards">
@@ -126,7 +139,7 @@
     </div>
   </div>
 
-  <div class="screen" data-step="5">
+  <div class="screen" data-step="6">
     <h1 class="heading">Выбери<br><span class="gold">персонажа</span></h1>
     <p class="subtext">Это твой цифровой двойник. Кем он будет?</p>
     <div class="gender-row">
@@ -141,7 +154,7 @@
     </div>
   </div>
 
-  <div class="screen" data-step="6">
+  <div class="screen" data-step="7">
     <div class="final-avatar" id="finalAvatar"><img src="IMG_8938%202.png" alt="Персонаж"></div>
     <h1 class="heading">Готово,<br><span class="gold" id="finalName">друг</span>!</h1>
     <p class="subtext">Твой Альтер создан.<br>Теперь каждый день — маленький шаг<br>к лучшей версии себя.</p>
@@ -155,29 +168,102 @@
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor?.('#1a1524'); }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('reset') === '1') localStorage.removeItem('alter_user');
-
-    const state = { step: 0, name: '', role: '', profession: '', goal: '', gender: '' };
-    const saved = localStorage.getItem('alter_user');
-    if (saved) {
-      try {
-        const user = JSON.parse(saved);
-        if (user.name && user.gender) window.location.href = 'app.html';
-      } catch(e) {}
+    // ============ ХРАНИЛИЩЕ ============
+    function storageGet(key) {
+      return new Promise((resolve) => {
+        if (tg && tg.CloudStorage) {
+          tg.CloudStorage.getItem(key, (err, value) => {
+            if (!err && value) resolve(value);
+            else resolve(localStorage.getItem(key));
+          });
+        } else {
+          resolve(localStorage.getItem(key));
+        }
+      });
     }
 
+    function storageSet(key, value) {
+      return new Promise((resolve) => {
+        if (tg && tg.CloudStorage) {
+          tg.CloudStorage.setItem(key, value, () => {
+            localStorage.setItem(key, value);
+            resolve();
+          });
+        } else {
+          localStorage.setItem(key, value);
+          resolve();
+        }
+      });
+    }
+
+    // ============ СБРОС ЧЕРЕЗ URL ============
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldReset = urlParams.get('reset') === '1';
+
+    // ============ СОСТОЯНИЕ ============
+    const state = { step: 0, name: '', role: '', profession: '', course: '', goal: '', gender: '' };
+
     const screens = document.querySelectorAll('.screen');
-    const dots = document.querySelectorAll('.dot');
+    const progress = document.getElementById('progress');
     const nextBtn = document.getElementById('nextBtn');
     const backBtn = document.getElementById('backBtn');
     const nameInput = document.getElementById('nameInput');
     const finalName = document.getElementById('finalName');
     const finalAvatar = document.getElementById('finalAvatar');
-    const buttonTexts = ['Начать','Продолжить','Дальше','Дальше','Дальше','Дальше','Продолжить'];
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // ============ ПРОВЕРКА: УЖЕ ПРОШЁЛ? ============
+    async function checkExistingUser() {
+      if (shouldReset) {
+        localStorage.removeItem('alter_user');
+        if (tg && tg.CloudStorage) {
+          await new Promise(r => tg.CloudStorage.removeItem('alter_user', r));
+        }
+        loadingOverlay.style.display = 'none';
+        return;
+      }
+
+      const saved = await storageGet('alter_user');
+      if (saved) {
+        try {
+          const user = JSON.parse(saved);
+          if (user.name && user.gender) {
+            window.location.href = 'app.html';
+            return;
+          }
+        } catch(e) {}
+      }
+      loadingOverlay.style.display = 'none';
+    }
+
+    // ============ ПРОГРЕСС-ТОЧКИ ============
+    screens.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      progress.appendChild(dot);
+    });
+    const dots = document.querySelectorAll('.dot');
+
+    function getActiveSteps() {
+      const steps = [0, 1, 2, 3];
+      if (state.role === 'student') steps.push(4);
+      steps.push(5, 6, 7);
+      return steps;
+    }
+
+    function goToNextStep() {
+      const active = getActiveSteps();
+      const idx = active.indexOf(state.step);
+      if (idx < active.length - 1) goToStep(active[idx + 1]);
+    }
+
+    function goToPrevStep() {
+      const active = getActiveSteps();
+      const idx = active.indexOf(state.step);
+      if (idx > 0) goToStep(active[idx - 1]);
+    }
 
     function goToStep(newStep) {
-      if (newStep < 0 || newStep >= screens.length) return;
       const current = document.querySelector('.screen.active');
       if (current) {
         current.classList.remove('active');
@@ -192,36 +278,45 @@
     }
 
     function updateProgress() {
-      dots.forEach((dot, i) => {
-        dot.classList.remove('active', 'done');
-        if (i < state.step) dot.classList.add('done');
-        if (i === state.step) dot.classList.add('active');
+      const active = getActiveSteps();
+      const currentIdx = active.indexOf(state.step);
+      dots.forEach(d => { d.style.display = 'none'; d.classList.remove('active', 'done'); });
+      active.forEach((stepIdx, i) => {
+        if (dots[stepIdx]) {
+          dots[stepIdx].style.display = 'block';
+          if (i < currentIdx) dots[stepIdx].classList.add('done');
+          if (i === currentIdx) dots[stepIdx].classList.add('active');
+        }
       });
     }
 
     function updateBack() {
-      if (state.step > 0 && state.step < 6) backBtn.classList.add('visible');
+      const active = getActiveSteps();
+      const idx = active.indexOf(state.step);
+      if (idx > 0 && state.step < 7) backBtn.classList.add('visible');
       else backBtn.classList.remove('visible');
     }
 
     function updateButton() {
-      nextBtn.textContent = buttonTexts[state.step];
+      const texts = {0:'Начать',1:'Продолжить',2:'Дальше',3:'Дальше',4:'Дальше',5:'Дальше',6:'Дальше',7:'Продолжить'};
+      nextBtn.textContent = texts[state.step] || 'Дальше';
       let canProceed = false;
       switch (state.step) {
         case 0: canProceed = true; break;
         case 1: canProceed = state.name.trim().length >= 2; break;
         case 2: canProceed = !!state.role; break;
         case 3: canProceed = !!state.profession; break;
-        case 4: canProceed = !!state.goal; break;
-        case 5: canProceed = !!state.gender; break;
-        case 6: canProceed = true; break;
+        case 4: canProceed = !!state.course; break;
+        case 5: canProceed = !!state.goal; break;
+        case 6: canProceed = !!state.gender; break;
+        case 7: canProceed = true; break;
       }
       nextBtn.disabled = !canProceed;
     }
 
     nameInput.addEventListener('input', (e) => { state.name = e.target.value; updateButton(); });
     nameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && state.name.trim().length >= 2) { nameInput.blur(); goToStep(2); }
+      if (e.key === 'Enter' && state.name.trim().length >= 2) { nameInput.blur(); goToNextStep(); }
     });
 
     document.querySelectorAll('.card').forEach(card => {
@@ -233,7 +328,8 @@
         card.classList.add('selected');
         if (step === 2) state.role = value;
         if (step === 3) state.profession = value;
-        if (step === 4) state.goal = value;
+        if (step === 4) state.course = value;
+        if (step === 5) state.goal = value;
         updateButton();
       });
     });
@@ -248,19 +344,23 @@
       });
     });
 
-    backBtn.addEventListener('click', () => goToStep(state.step - 1));
+    backBtn.addEventListener('click', goToPrevStep);
 
-    nextBtn.addEventListener('click', () => {
-      if (state.step === 6) {
+    nextBtn.addEventListener('click', async () => {
+      if (state.step === 7) {
         finalName.textContent = state.name || 'друг';
-        const user = { name: state.name, role: state.role, profession: state.profession, goal: state.goal, gender: state.gender, createdAt: new Date().toISOString() };
-        localStorage.setItem('alter_user', JSON.stringify(user));
+        const user = {
+          name: state.name, role: state.role, profession: state.profession,
+          course: state.course, goal: state.goal, gender: state.gender,
+          createdAt: new Date().toISOString()
+        };
+        await storageSet('alter_user', JSON.stringify(user));
         nextBtn.textContent = 'Загрузка...';
         nextBtn.disabled = true;
         setTimeout(() => { window.location.href = 'app.html'; }, 400);
       } else {
-        if (state.step === 5) finalName.textContent = state.name || 'друг';
-        goToStep(state.step + 1);
+        if (state.step === 6) finalName.textContent = state.name || 'друг';
+        goToNextStep();
       }
     });
 
@@ -272,6 +372,7 @@
     screens.forEach(s => observer.observe(s, { attributes: true, attributeFilter: ['class'] }));
 
     updateProgress(); updateButton(); updateBack();
+    checkExistingUser();
   </script>
 </body>
 </html>
