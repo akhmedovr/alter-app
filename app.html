@@ -20,7 +20,8 @@
     .title-block h1 { font-size: 18px; font-weight: 700; text-shadow: 0 2px 6px rgba(0,0,0,0.6); margin-bottom: 4px; }
     .title-block .level { font-size: 13px; opacity: 0.9; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
     .progress { position: relative; z-index: 10; margin: 12px 24px 0; height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-    .progress-fill { height: 100%; width: 45%; background: linear-gradient(90deg, #FFD700, #FFA500); border-radius: 4px; transition: width 0.5s ease; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #FFD700, #FFA500); border-radius: 4px; transition: width 0.5s ease; }
+    .progress-label { position: relative; z-index: 10; text-align: center; margin-top: 6px; font-size: 11px; color: rgba(255,255,255,0.6); text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
     .habits { position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; padding: 16px; background: linear-gradient(to top, rgba(0,0,0,0.75), transparent); }
     .habit { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; margin-bottom: 8px; background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s ease; cursor: pointer; }
     .habit:active { transform: scale(0.97); background: rgba(255,255,255,0.25); }
@@ -85,30 +86,31 @@
   <div class="app">
     <img src="room.png%202.png" alt="" class="room-bg">
     <div class="top-bar">
-      <div class="stat">🏆 Ур. 5</div>
-      <div class="stat">⭐ <span id="xpCounter">1250</span> XP</div>
-      <div class="stat">🔥 7 дней</div>
+      <div class="stat">🏆 Ур. <span id="levelCounter">1</span></div>
+      <div class="stat">⭐ <span id="xpCounter">0</span> XP</div>
+      <div class="stat">🔥 <span id="streakCounter">0</span> <span id="streakLabel">дней</span></div>
     </div>
     <div class="title-block">
       <h1 id="userName">Алекс</h1>
       <div class="level" id="userLevel">Студент · Медик</div>
     </div>
     <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 100 XP до следующего уровня</div>
     <div class="character-shadow"></div>
     <div class="character-wrapper">
       <img src="IMG_8938%202.png" alt="" class="character" id="character">
     </div>
     <div class="bubble" id="bubble">Привет! Готов начать день?</div>
     <div class="habits">
-      <div class="habit" data-xp="10">
+      <div class="habit" data-habit="pushups" data-xp="10">
         <div class="habit-left"><div class="habit-icon">🏃</div><div class="habit-info"><div class="habit-title">10 приседаний</div><div class="habit-subtitle">2 минуты</div></div></div>
         <div class="habit-check"></div>
       </div>
-      <div class="habit" id="taskHabit" data-xp="20">
+      <div class="habit" data-habit="ai_task" data-xp="20" id="taskHabit">
         <div class="habit-left"><div class="habit-icon">📖</div><div class="habit-info"><div class="habit-title">AI-задача</div><div class="habit-subtitle">Выбери дисциплину · 3 минуты</div></div></div>
         <div class="habit-check"></div>
       </div>
-      <div class="habit" data-xp="10">
+      <div class="habit" data-habit="sleep" data-xp="10">
         <div class="habit-left"><div class="habit-icon">😴</div><div class="habit-info"><div class="habit-title">Лечь до 23:00</div><div class="habit-subtitle">Сон 8 часов</div></div></div>
         <div class="habit-check"></div>
       </div>
@@ -131,19 +133,77 @@
     if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor?.('#1a1524'); }
 
     const API_URL = 'https://alter-ai.ruslan-akhmedov-2005.workers.dev';
+    const XP_PER_LEVEL = 100;
 
-    const saved = localStorage.getItem('alter_user');
+    // ============ ПОЛЬЗОВАТЕЛЬ ============
+    const savedUser = localStorage.getItem('alter_user');
     let user = { name: 'друг', profession: 'medicine', role: 'student', course: '3', gender: 'male' };
-    if (saved) { try { user = { ...user, ...JSON.parse(saved) }; } catch(e) {} }
+    if (savedUser) { try { user = { ...user, ...JSON.parse(savedUser) }; } catch(e) {} }
 
-    // Загружаем кастомные дисциплины пользователя
+    // ============ ПРОГРЕСС ============
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function yesterdayStr() {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      return d.toISOString().split('T')[0];
+    }
+
+    function loadProgress() {
+      const raw = localStorage.getItem('alter_progress');
+      if (raw) {
+        try {
+          const p = JSON.parse(raw);
+          // Если новый день — сбрасываем галочки
+          if (p.daily && p.daily.date !== todayStr()) {
+            p.daily = { date: todayStr(), done: [] };
+            localStorage.setItem('alter_progress', JSON.stringify(p));
+          }
+          return p;
+        } catch(e) {}
+      }
+      return {
+        xp: 0,
+        level: 1,
+        streak: 0,
+        lastActiveDate: null,
+        daily: { date: todayStr(), done: [] },
+        stats: { tasks_total: 0, tasks_correct: 0 }
+      };
+    }
+
+    let progress = loadProgress();
+
+    function saveProgress() {
+      localStorage.setItem('alter_progress', JSON.stringify(progress));
+    }
+
+    function updateStreak() {
+      const today = todayStr();
+      if (progress.lastActiveDate === today) return;
+      if (progress.lastActiveDate === yesterdayStr()) {
+        progress.streak++;
+      } else {
+        progress.streak = 1;
+      }
+      progress.lastActiveDate = today;
+    }
+
+    function addXp(amount) {
+      progress.xp += amount;
+      progress.level = Math.floor(progress.xp / XP_PER_LEVEL) + 1;
+      updateStreak();
+      saveProgress();
+      renderTopBar();
+    }
+
+    // ============ ЗАГРУЗКА КАСТОМНЫХ ДИСЦИПЛИН ============
     let customDisciplines = [];
     try {
       const c = localStorage.getItem('alter_custom_disciplines');
       if (c) customDisciplines = JSON.parse(c);
     } catch(e) {}
 
-    // БАЗА ДИСЦИПЛИН ПО ПРОФЕССИЯМ
+    // ============ БАЗА ДИСЦИПЛИН ============
     const disciplinesByProfession = {
       dentistry: [
         {value: 'therapy_stom', label: 'Терапевтическая стоматология', icon: '🦷'},
@@ -205,6 +265,7 @@
       ]
     };
 
+    // ============ ОТРИСОВКА ШАПКИ ============
     document.getElementById('userName').textContent = user.name;
     const profMap = { medicine: 'Медик', dentistry: 'Стоматолог', law: 'Юрист', it: 'IT-специалист', economics: 'Экономист', other: 'Специалист' };
     const roleMap = { school: 'Школьник', student: 'Студент', work: 'Специалист' };
@@ -219,33 +280,62 @@
     }
     document.getElementById('bubble').textContent = `Привет, ${user.name}! Готов начать день?`;
 
-    let totalXp = 1250;
-    let completedCount = 0;
-    const totalHabits = 3;
-    const xpPopup = document.getElementById('xpPopup');
-    const progressFill = document.getElementById('progressFill');
+    const levelCounter = document.getElementById('levelCounter');
     const xpCounter = document.getElementById('xpCounter');
+    const streakCounter = document.getElementById('streakCounter');
+    const streakLabel = document.getElementById('streakLabel');
+    const progressFill = document.getElementById('progressFill');
+    const progressLabel = document.getElementById('progressLabel');
+    const xpPopup = document.getElementById('xpPopup');
     const bubble = document.getElementById('bubble');
 
-    const phrases = [`Отличная работа, ${user.name}!`, 'Я чувствую, как мы растём!', 'Так держать!', 'Ещё немного — и новый уровень!'];
+    function renderTopBar() {
+      levelCounter.textContent = progress.level;
+      xpCounter.textContent = progress.xp;
+      streakCounter.textContent = progress.streak;
+      // Форма слова «день»
+      const n = progress.streak;
+      let label = 'дней';
+      if (n % 10 === 1 && n % 100 !== 11) label = 'день';
+      else if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) label = 'дня';
+      streakLabel.textContent = label;
+      // Прогресс-бар
+      const xpInLevel = progress.xp % XP_PER_LEVEL;
+      progressFill.style.width = xpInLevel + '%';
+      progressLabel.textContent = `${xpInLevel} / ${XP_PER_LEVEL} XP до следующего уровня`;
+    }
 
+    // ============ ГАЛОЧКИ ПРИВЫЧЕК ============
+    function renderHabits() {
+      document.querySelectorAll('.habit').forEach(habit => {
+        const id = habit.dataset.habit;
+        if (progress.daily.done.includes(id)) {
+          habit.classList.add('done');
+          habit.querySelector('.habit-check').textContent = '✓';
+        } else {
+          habit.classList.remove('done');
+          habit.querySelector('.habit-check').textContent = '';
+        }
+      });
+    }
+
+    // ============ ОБЫЧНЫЕ ПРИВЫЧКИ ============
     document.querySelectorAll('.habit:not(#taskHabit)').forEach(habit => {
       habit.addEventListener('click', () => {
-        if (habit.classList.contains('done')) return;
-        habit.classList.add('done');
-        habit.querySelector('.habit-check').textContent = '✓';
+        const id = habit.dataset.habit;
+        if (progress.daily.done.includes(id)) return;
+        progress.daily.done.push(id);
         const xp = parseInt(habit.dataset.xp);
-        totalXp += xp;
-        completedCount++;
+        addXp(xp);
+        renderHabits();
         showXpPopup(xp);
-        updateProgress();
-        if (completedCount === totalHabits) bubble.textContent = 'Все задачи выполнены! Отличный день.';
-        else bubble.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+        bubble.textContent = [`Отличная работа, ${user.name}!`, 'Я чувствую, как мы растём!', 'Так держать!', 'Ещё немного — и новый уровень!'][Math.floor(Math.random() * 4)];
         bubble.style.animation = 'none';
         setTimeout(() => { bubble.style.animation = 'bubbleIn 0.5s ease-out'; }, 10);
       });
     });
 
+    // ============ AI-ЗАДАЧА ============
     const taskHabit = document.getElementById('taskHabit');
     const modal = document.getElementById('taskModal');
     const modalBody = document.getElementById('modalBody');
@@ -253,7 +343,7 @@
     const modalTitle = document.getElementById('modalTitle');
 
     taskHabit.addEventListener('click', () => {
-      if (taskHabit.classList.contains('done')) return;
+      if (progress.daily.done.includes('ai_task')) return;
       modal.classList.add('active');
       showDisciplineSelector();
     });
@@ -265,19 +355,15 @@
       modalTitle.textContent = '📖 Выбери дисциплину';
       const baseList = disciplinesByProfession[user.profession] || disciplinesByProfession.other;
       const allDisciplines = [...baseList, ...customDisciplines];
-
       const itemsHtml = allDisciplines.map(d => `
         <button class="discipline-item" data-value="${d.value}">
           <span class="di-icon">${d.icon || '📌'}</span>
           <span>${d.label}</span>
         </button>
       `).join('');
-
       modalBody.innerHTML = `
         <div class="section-label">По какой теме задача?</div>
-        <div class="discipline-list" id="disciplineList">
-          ${itemsHtml}
-        </div>
+        <div class="discipline-list" id="disciplineList">${itemsHtml}</div>
         <button class="add-custom-btn" id="addCustomBtn">➕ Добавить свою дисциплину</button>
         <div class="custom-input-wrap" id="customInputWrap">
           <input type="text" class="custom-input" id="customInput" placeholder="Например: Геронтостоматология" maxlength="50">
@@ -288,7 +374,6 @@
         </div>
         <button class="start-task-btn" id="startTaskBtn" disabled>Начать задачу</button>
       `;
-
       let selectedDiscipline = null;
       document.querySelectorAll('.discipline-item').forEach(item => {
         item.addEventListener('click', () => {
@@ -298,23 +383,19 @@
           document.getElementById('startTaskBtn').disabled = false;
         });
       });
-
       const addBtn = document.getElementById('addCustomBtn');
       const inputWrap = document.getElementById('customInputWrap');
       const input = document.getElementById('customInput');
-
       addBtn.addEventListener('click', () => {
         inputWrap.classList.add('active');
         addBtn.style.display = 'none';
         setTimeout(() => input.focus(), 200);
       });
-
       document.getElementById('customCancel').addEventListener('click', () => {
         inputWrap.classList.remove('active');
         addBtn.style.display = 'block';
         input.value = '';
       });
-
       document.getElementById('customSave').addEventListener('click', () => {
         const val = input.value.trim();
         if (val.length < 2) return;
@@ -322,27 +403,22 @@
         const newDisc = { value, label: val, icon: '📌', custom: true };
         customDisciplines.push(newDisc);
         localStorage.setItem('alter_custom_disciplines', JSON.stringify(customDisciplines));
-        // Перерисовываем селектор
         showDisciplineSelector();
-        // Автоселект новой
         setTimeout(() => {
           const newBtn = document.querySelector(`.discipline-item[data-value="${value}"]`);
           if (newBtn) newBtn.click();
         }, 100);
       });
-
       document.getElementById('startTaskBtn').addEventListener('click', () => {
         if (selectedDiscipline) generateTask(selectedDiscipline);
       });
     }
 
     async function generateTask(discipline) {
-      // Ищем человеческое название дисциплины
       const baseList = disciplinesByProfession[user.profession] || disciplinesByProfession.other;
       const allDisc = [...baseList, ...customDisciplines];
       const found = allDisc.find(d => d.value === discipline);
       const disciplineLabel = found ? found.label : discipline;
-
       modalTitle.textContent = '📖 AI-задача';
       modalBody.innerHTML = `
         <div class="modal-loading">
@@ -396,19 +472,20 @@
         if (i === task.correct) btn.classList.add('correct');
         else if (i === userIdx && !isCorrect) btn.classList.add('wrong');
       });
+      progress.stats.tasks_total++;
       if (isCorrect) {
+        progress.stats.tasks_correct++;
         result.innerHTML = `<div class="task-result correct">✓ Правильно!</div><div class="task-explanation">${task.explanation || ''}</div>`;
-        taskHabit.classList.add('done');
-        taskHabit.querySelector('.habit-check').textContent = '✓';
+        progress.daily.done.push('ai_task');
         const xp = task.xp || 20;
-        totalXp += xp;
-        completedCount++;
+        addXp(xp);
+        renderHabits();
         showXpPopup(xp);
-        updateProgress();
         bubble.textContent = `Правильно! +${xp} XP`;
         bubble.style.animation = 'none';
         setTimeout(() => { bubble.style.animation = 'bubbleIn 0.5s ease-out'; }, 10);
       } else {
+        saveProgress();
         result.innerHTML = `<div class="task-result wrong">✗ Неправильно</div><div class="task-explanation">${task.explanation || ''}</div>`;
       }
     }
@@ -420,11 +497,9 @@
       xpPopup.classList.add('show');
     }
 
-    function updateProgress() {
-      const percent = 20 + (completedCount / totalHabits) * 40;
-      progressFill.style.width = percent + '%';
-      xpCounter.textContent = totalXp;
-    }
+    // ============ ИНИЦИАЛИЗАЦИЯ ============
+    renderTopBar();
+    renderHabits();
   </script>
 </body>
 </html>
