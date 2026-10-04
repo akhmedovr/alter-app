@@ -38,28 +38,45 @@
     .bubble { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); background: #fff; color: #222; padding: 10px 16px; border-radius: 18px; font-size: 14px; font-weight: 500; z-index: 8; max-width: 240px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: bubbleIn 0.5s ease-out; }
     @keyframes bubbleIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
     .bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #fff; }
-
-    /* Модальное окно с AI-задачей */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; opacity: 0; transition: opacity 0.3s ease; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
     .modal-overlay.active { display: flex; opacity: 1; }
-    .modal { background: #1f1a2e; border-radius: 24px; padding: 24px; max-width: 400px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid rgba(255,209,102,0.2); animation: modalIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+    .modal { background: #1f1a2e; border-radius: 24px; padding: 22px; max-width: 400px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 1px solid rgba(255,209,102,0.2); animation: modalIn 0.4s cubic-bezier(0.4,0,0.2,1); }
     @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-title { font-size: 18px; font-weight: 700; color: #FFD166; }
-    .modal-close { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .modal-title { font-size: 17px; font-weight: 700; color: #FFD166; }
+    .modal-close { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .modal-loading { text-align: center; padding: 40px 20px; }
     .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,209,102,0.2); border-top-color: #FFD166; border-radius: 50%; margin: 0 auto 16px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { color: rgba(255,255,255,0.6); font-size: 14px; }
-    .task-question { font-size: 16px; line-height: 1.5; margin-bottom: 20px; color: #fff; }
+    .section-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .discipline-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 50vh; overflow-y: auto; padding-right: 4px; }
+    .discipline-item { background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 8px; font-size: 12px; font-weight: 600; color: #fff; cursor: pointer; transition: all 0.2s ease; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px; font-family: inherit; min-height: 70px; justify-content: center; }
+    .discipline-item:active { transform: scale(0.97); }
+    .discipline-item .di-icon { font-size: 22px; }
+    .discipline-item.selected { background: linear-gradient(135deg, rgba(255,209,102,0.2), rgba(255,169,77,0.12)); border-color: rgba(255,209,102,0.6); }
+    .add-custom-btn { width: 100%; margin-top: 12px; background: rgba(255,255,255,0.06); border: 1.5px dashed rgba(255,209,102,0.4); border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; color: #FFD166; cursor: pointer; font-family: inherit; }
+    .add-custom-btn:active { transform: scale(0.98); }
+    .custom-input-wrap { margin-top: 12px; display: none; }
+    .custom-input-wrap.active { display: block; }
+    .custom-input { width: 100%; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 14px 16px; font-size: 14px; color: #fff; outline: none; font-family: inherit; }
+    .custom-input:focus { border-color: rgba(255,209,102,0.5); }
+    .custom-input::placeholder { color: rgba(255,255,255,0.3); }
+    .custom-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .custom-actions button { flex: 1; border: none; border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .custom-save { background: linear-gradient(135deg, #FFD166, #FFA94D); color: #1a1524; }
+    .custom-cancel { background: rgba(255,255,255,0.08); color: #fff; }
+    .start-task-btn { width: 100%; margin-top: 16px; background: linear-gradient(135deg, #FFD166 0%, #FFA94D 100%); border: none; border-radius: 14px; padding: 16px; font-size: 15px; font-weight: 700; color: #1a1524; cursor: pointer; font-family: inherit; box-shadow: 0 8px 24px rgba(255,169,77,0.3); }
+    .start-task-btn:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.3); box-shadow: none; cursor: not-allowed; }
+    .task-question { font-size: 15px; line-height: 1.5; margin-bottom: 18px; color: #fff; }
     .task-options { display: flex; flex-direction: column; gap: 10px; }
-    .task-option { background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px 16px; font-size: 15px; color: #fff; cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: inherit; }
+    .task-option { background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px 16px; font-size: 14px; color: #fff; cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: inherit; }
     .task-option:active { transform: scale(0.98); }
     .task-option.correct { background: rgba(76,175,80,0.3); border-color: #4CAF50; }
     .task-option.wrong { background: rgba(244,67,54,0.3); border-color: #f44336; }
     .task-option:disabled { cursor: not-allowed; }
-    .task-explanation { margin-top: 20px; padding: 16px; background: rgba(255,209,102,0.1); border-radius: 14px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.9); border-left: 3px solid #FFD166; }
-    .task-result { text-align: center; margin-top: 16px; font-size: 16px; font-weight: 700; }
+    .task-explanation { margin-top: 18px; padding: 14px; background: rgba(255,209,102,0.1); border-radius: 14px; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.9); border-left: 3px solid #FFD166; }
+    .task-result { text-align: center; margin-top: 14px; font-size: 16px; font-weight: 700; }
     .task-result.correct { color: #4CAF50; }
     .task-result.wrong { color: #f44336; }
   </style>
@@ -74,7 +91,7 @@
     </div>
     <div class="title-block">
       <h1 id="userName">Алекс</h1>
-      <div class="level" id="userLevel">Студент-медик · 3 курс</div>
+      <div class="level" id="userLevel">Студент · Медик</div>
     </div>
     <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
     <div class="character-shadow"></div>
@@ -87,8 +104,8 @@
         <div class="habit-left"><div class="habit-icon">🏃</div><div class="habit-info"><div class="habit-title">10 приседаний</div><div class="habit-subtitle">2 минуты</div></div></div>
         <div class="habit-check"></div>
       </div>
-      <div class="habit" id="taskHabit" data-xp="15">
-        <div class="habit-left"><div class="habit-icon">📖</div><div class="habit-info"><div class="habit-title">Клиническая задача</div><div class="habit-subtitle">AI · 3 минуты</div></div></div>
+      <div class="habit" id="taskHabit" data-xp="20">
+        <div class="habit-left"><div class="habit-icon">📖</div><div class="habit-info"><div class="habit-title">AI-задача</div><div class="habit-subtitle">Выбери дисциплину · 3 минуты</div></div></div>
         <div class="habit-check"></div>
       </div>
       <div class="habit" data-xp="10">
@@ -99,11 +116,10 @@
     <div class="xp-popup" id="xpPopup"></div>
   </div>
 
-  <!-- Модальное окно AI-задачи -->
   <div class="modal-overlay" id="taskModal">
     <div class="modal">
       <div class="modal-header">
-        <div class="modal-title">📖 AI-задача</div>
+        <div class="modal-title" id="modalTitle">📖 AI-задача</div>
         <button class="modal-close" id="modalClose">✕</button>
       </div>
       <div id="modalBody"></div>
@@ -114,47 +130,105 @@
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor?.('#1a1524'); }
 
-    // API endpoint
     const API_URL = 'https://alter-ai.ruslan-akhmedov-2005.workers.dev';
 
-    // Пользователь
     const saved = localStorage.getItem('alter_user');
-    let user = { name: 'друг', profession: 'medicine', role: 'student', gender: 'male' };
-    if (saved) {
-      try { user = { ...user, ...JSON.parse(saved) }; } catch(e) {}
-    }
+    let user = { name: 'друг', profession: 'medicine', role: 'student', course: '3', gender: 'male' };
+    if (saved) { try { user = { ...user, ...JSON.parse(saved) }; } catch(e) {} }
+
+    // Загружаем кастомные дисциплины пользователя
+    let customDisciplines = [];
+    try {
+      const c = localStorage.getItem('alter_custom_disciplines');
+      if (c) customDisciplines = JSON.parse(c);
+    } catch(e) {}
+
+    // БАЗА ДИСЦИПЛИН ПО ПРОФЕССИЯМ
+    const disciplinesByProfession = {
+      dentistry: [
+        {value: 'therapy_stom', label: 'Терапевтическая стоматология', icon: '🦷'},
+        {value: 'cariology', label: 'Кариесология', icon: '🦷'},
+        {value: 'endodontics', label: 'Эндодонтия', icon: '🔬'},
+        {value: 'surgery_stom', label: 'Хирургическая стоматология', icon: '🔪'},
+        {value: 'prosthetics', label: 'Ортопедическая стоматология', icon: '👑'},
+        {value: 'orthodontics', label: 'Ортодонтия и детское протезирование', icon: '📐'},
+        {value: 'parodontology', label: 'Пародонтология', icon: '🩸'},
+        {value: 'pediatric_stom', label: 'Детская стоматология', icon: '👶'},
+        {value: 'maxillofacial', label: 'Челюстно-лицевая хирургия', icon: '🧠'},
+        {value: 'implantology', label: 'Дентальная имплантология', icon: '⚙️'},
+        {value: 'gnathology', label: 'Гнатология', icon: '📏'},
+        {value: 'gerontostom', label: 'Геронтостоматология', icon: '👴'},
+        {value: 'prevention', label: 'Профилактика стомат. заболеваний', icon: '🛡️'},
+        {value: 'anesthesia', label: 'Местное обезболивание', icon: '💉'},
+        {value: 'radiology', label: 'Лучевая диагностика', icon: '📡'},
+        {value: 'oncostom', label: 'Онкостоматология', icon: '🎗️'},
+        {value: 'materials', label: 'Материаловедение', icon: '🧪'}
+      ],
+      medicine: [
+        {value: 'therapy', label: 'Терапия', icon: '🩺'},
+        {value: 'surgery', label: 'Хирургия', icon: '🔪'},
+        {value: 'pharmacology', label: 'Фармакология', icon: '💊'},
+        {value: 'anatomy', label: 'Анатомия', icon: '🦴'},
+        {value: 'cardiology', label: 'Кардиология', icon: '❤️'},
+        {value: 'neurology', label: 'Неврология', icon: '🧠'},
+        {value: 'pediatrics', label: 'Педиатрия', icon: '👶'},
+        {value: 'infectious', label: 'Инфекционные болезни', icon: '🦠'},
+        {value: 'pathphys', label: 'Патофизиология', icon: '⚗️'}
+      ],
+      law: [
+        {value: 'civil', label: 'Гражданское право', icon: '📜'},
+        {value: 'criminal', label: 'Уголовное право', icon: '⚖️'},
+        {value: 'admin', label: 'Административное', icon: '🏛️'},
+        {value: 'tax', label: 'Налоговое право', icon: '💰'},
+        {value: 'labor', label: 'Трудовое право', icon: '👷'},
+        {value: 'constitutional', label: 'Конституционное', icon: '📕'}
+      ],
+      it: [
+        {value: 'python', label: 'Python', icon: '🐍'},
+        {value: 'algorithms', label: 'Алгоритмы', icon: '🔢'},
+        {value: 'databases', label: 'Базы данных', icon: '🗄️'},
+        {value: 'frontend', label: 'Frontend', icon: '🎨'},
+        {value: 'backend', label: 'Backend', icon: '⚙️'},
+        {value: 'devops', label: 'DevOps', icon: '🚀'},
+        {value: 'networks', label: 'Сети', icon: '🌐'}
+      ],
+      economics: [
+        {value: 'micro', label: 'Микроэкономика', icon: '📈'},
+        {value: 'macro', label: 'Макроэкономика', icon: '🌍'},
+        {value: 'finance', label: 'Финансы', icon: '💵'},
+        {value: 'accounting', label: 'Бухучёт', icon: '📊'},
+        {value: 'marketing', label: 'Маркетинг', icon: '🎯'}
+      ],
+      other: [
+        {value: 'general', label: 'Общее развитие', icon: '📖'},
+        {value: 'logic', label: 'Логика', icon: '🧩'}
+      ]
+    };
 
     document.getElementById('userName').textContent = user.name;
     const profMap = { medicine: 'Медик', dentistry: 'Стоматолог', law: 'Юрист', it: 'IT-специалист', economics: 'Экономист', other: 'Специалист' };
     const roleMap = { school: 'Школьник', student: 'Студент', work: 'Специалист' };
+    const courseMap = { '1': '1 курс', '2': '2 курс', '3': '3 курс', '4': '4 курс', '5': '5-6 курс' };
     const prof = profMap[user.profession] || '';
     const role = roleMap[user.role] || '';
-    document.getElementById('userLevel').textContent = [role, prof].filter(Boolean).join(' · ') || 'Твой Альтер';
+    const courseStr = user.role === 'student' && user.course ? ' · ' + (courseMap[user.course] || '') : '';
+    document.getElementById('userLevel').textContent = ([role, prof].filter(Boolean).join(' · ') + courseStr).replace(/^ · /, '') || 'Твой Альтер';
 
     if (user.gender === 'female') {
       document.getElementById('character').src = 'charactel_female.png.png';
     }
-
     document.getElementById('bubble').textContent = `Привет, ${user.name}! Готов начать день?`;
 
     let totalXp = 1250;
     let completedCount = 0;
     const totalHabits = 3;
-    const habits = document.querySelectorAll('.habit');
     const xpPopup = document.getElementById('xpPopup');
     const progressFill = document.getElementById('progressFill');
     const xpCounter = document.getElementById('xpCounter');
     const bubble = document.getElementById('bubble');
 
-    const phrases = [
-      `Отличная работа, ${user.name}!`,
-      'Я чувствую, как мы растём!',
-      'Так держать!',
-      'Ещё немного — и новый уровень!',
-      'Спасибо, что не забыл про меня.'
-    ];
+    const phrases = [`Отличная работа, ${user.name}!`, 'Я чувствую, как мы растём!', 'Так держать!', 'Ещё немного — и новый уровень!'];
 
-    // Обычные привычки
     document.querySelectorAll('.habit:not(#taskHabit)').forEach(habit => {
       habit.addEventListener('click', () => {
         if (habit.classList.contains('done')) return;
@@ -172,22 +246,118 @@
       });
     });
 
-    // ===== AI-ЗАДАЧА =====
     const taskHabit = document.getElementById('taskHabit');
     const modal = document.getElementById('taskModal');
     const modalBody = document.getElementById('modalBody');
     const modalClose = document.getElementById('modalClose');
+    const modalTitle = document.getElementById('modalTitle');
 
-    taskHabit.addEventListener('click', async () => {
+    taskHabit.addEventListener('click', () => {
       if (taskHabit.classList.contains('done')) return;
-      openModal();
-      showLoading();
+      modal.classList.add('active');
+      showDisciplineSelector();
+    });
+
+    modalClose.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+
+    function showDisciplineSelector() {
+      modalTitle.textContent = '📖 Выбери дисциплину';
+      const baseList = disciplinesByProfession[user.profession] || disciplinesByProfession.other;
+      const allDisciplines = [...baseList, ...customDisciplines];
+
+      const itemsHtml = allDisciplines.map(d => `
+        <button class="discipline-item" data-value="${d.value}">
+          <span class="di-icon">${d.icon || '📌'}</span>
+          <span>${d.label}</span>
+        </button>
+      `).join('');
+
+      modalBody.innerHTML = `
+        <div class="section-label">По какой теме задача?</div>
+        <div class="discipline-list" id="disciplineList">
+          ${itemsHtml}
+        </div>
+        <button class="add-custom-btn" id="addCustomBtn">➕ Добавить свою дисциплину</button>
+        <div class="custom-input-wrap" id="customInputWrap">
+          <input type="text" class="custom-input" id="customInput" placeholder="Например: Геронтостоматология" maxlength="50">
+          <div class="custom-actions">
+            <button class="custom-cancel" id="customCancel">Отмена</button>
+            <button class="custom-save" id="customSave">Сохранить</button>
+          </div>
+        </div>
+        <button class="start-task-btn" id="startTaskBtn" disabled>Начать задачу</button>
+      `;
+
+      let selectedDiscipline = null;
+      document.querySelectorAll('.discipline-item').forEach(item => {
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.discipline-item').forEach(i => i.classList.remove('selected'));
+          item.classList.add('selected');
+          selectedDiscipline = item.dataset.value;
+          document.getElementById('startTaskBtn').disabled = false;
+        });
+      });
+
+      const addBtn = document.getElementById('addCustomBtn');
+      const inputWrap = document.getElementById('customInputWrap');
+      const input = document.getElementById('customInput');
+
+      addBtn.addEventListener('click', () => {
+        inputWrap.classList.add('active');
+        addBtn.style.display = 'none';
+        setTimeout(() => input.focus(), 200);
+      });
+
+      document.getElementById('customCancel').addEventListener('click', () => {
+        inputWrap.classList.remove('active');
+        addBtn.style.display = 'block';
+        input.value = '';
+      });
+
+      document.getElementById('customSave').addEventListener('click', () => {
+        const val = input.value.trim();
+        if (val.length < 2) return;
+        const value = 'custom_' + Date.now();
+        const newDisc = { value, label: val, icon: '📌', custom: true };
+        customDisciplines.push(newDisc);
+        localStorage.setItem('alter_custom_disciplines', JSON.stringify(customDisciplines));
+        // Перерисовываем селектор
+        showDisciplineSelector();
+        // Автоселект новой
+        setTimeout(() => {
+          const newBtn = document.querySelector(`.discipline-item[data-value="${value}"]`);
+          if (newBtn) newBtn.click();
+        }, 100);
+      });
+
+      document.getElementById('startTaskBtn').addEventListener('click', () => {
+        if (selectedDiscipline) generateTask(selectedDiscipline);
+      });
+    }
+
+    async function generateTask(discipline) {
+      // Ищем человеческое название дисциплины
+      const baseList = disciplinesByProfession[user.profession] || disciplinesByProfession.other;
+      const allDisc = [...baseList, ...customDisciplines];
+      const found = allDisc.find(d => d.value === discipline);
+      const disciplineLabel = found ? found.label : discipline;
+
+      modalTitle.textContent = '📖 AI-задача';
+      modalBody.innerHTML = `
+        <div class="modal-loading">
+          <div class="spinner"></div>
+          <div class="loading-text">AI готовит задачу по «${disciplineLabel}»...</div>
+        </div>
+      `;
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             profession: user.profession || 'medicine',
+            discipline: disciplineLabel,
+            course: user.course || '',
             topic: ''
           })
         });
@@ -200,54 +370,20 @@
             ⚠️ Не удалось загрузить задачу.<br>
             <span style="font-size:12px;opacity:0.7;">${e.message}</span>
           </div>
-          <button class="task-option" onclick="closeModal()">Закрыть</button>
+          <button class="start-task-btn" onclick="document.getElementById('taskModal').classList.remove('active')">Закрыть</button>
         `;
       }
-    });
-
-    function openModal() {
-      modal.classList.add('active');
-      if (tg) tg.BackButton?.show?.();
-      tg.BackButton?.onClick?.(closeModal);
-    }
-
-    function closeModal() {
-      modal.classList.remove('active');
-      tg.BackButton?.hide?.();
-    }
-
-    modalClose.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    function showLoading() {
-      modalBody.innerHTML = `
-        <div class="modal-loading">
-          <div class="spinner"></div>
-          <div class="loading-text">AI готовит задачу...</div>
-        </div>
-      `;
     }
 
     function showTask(task) {
-      const optionsHtml = task.options.map((opt, i) => `
-        <button class="task-option" data-index="${i}">${opt}</button>
-      `).join('');
-
+      const optionsHtml = task.options.map((opt, i) => `<button class="task-option" data-index="${i}">${opt}</button>`).join('');
       modalBody.innerHTML = `
         <div class="task-question">${task.question}</div>
-        <div class="task-options" id="taskOptions">
-          ${optionsHtml}
-        </div>
+        <div class="task-options">${optionsHtml}</div>
         <div id="taskResult"></div>
       `;
-
       document.querySelectorAll('.task-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt(btn.dataset.index);
-          checkAnswer(idx, task);
-        });
+        btn.addEventListener('click', () => checkAnswer(parseInt(btn.dataset.index), task));
       });
     }
 
@@ -255,39 +391,28 @@
       const options = document.querySelectorAll('.task-option');
       const result = document.getElementById('taskResult');
       const isCorrect = userIdx === task.correct;
-
       options.forEach((btn, i) => {
         btn.disabled = true;
         if (i === task.correct) btn.classList.add('correct');
         else if (i === userIdx && !isCorrect) btn.classList.add('wrong');
       });
-
       if (isCorrect) {
-        result.innerHTML = `
-          <div class="task-result correct">✓ Правильно!</div>
-          <div class="task-explanation">${task.explanation || ''}</div>
-        `;
-        // Награда
+        result.innerHTML = `<div class="task-result correct">✓ Правильно!</div><div class="task-explanation">${task.explanation || ''}</div>`;
         taskHabit.classList.add('done');
         taskHabit.querySelector('.habit-check').textContent = '✓';
-        const xp = task.xp || 15;
+        const xp = task.xp || 20;
         totalXp += xp;
         completedCount++;
         showXpPopup(xp);
         updateProgress();
-        xpCounter.textContent = totalXp;
         bubble.textContent = `Правильно! +${xp} XP`;
         bubble.style.animation = 'none';
         setTimeout(() => { bubble.style.animation = 'bubbleIn 0.5s ease-out'; }, 10);
       } else {
-        result.innerHTML = `
-          <div class="task-result wrong">✗ Неправильно</div>
-          <div class="task-explanation">${task.explanation || ''}</div>
-        `;
+        result.innerHTML = `<div class="task-result wrong">✗ Неправильно</div><div class="task-explanation">${task.explanation || ''}</div>`;
       }
     }
 
-    // ===== ОБЩИЕ ФУНКЦИИ =====
     function showXpPopup(xp) {
       xpPopup.textContent = `+${xp} XP`;
       xpPopup.classList.remove('show');
