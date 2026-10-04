@@ -16,7 +16,7 @@
     .character-wrapper { position: absolute; bottom: 19%; left: 50%; transform: translateX(-50%); width: 60%; max-width: 340px; z-index: 5; animation: breathe 3s ease-in-out infinite; }
     .character { width: 100%; display: block; transform: scaleX(-1); }
     @keyframes breathe { 0%,100% { transform: translateX(-50%) translateY(0) scale(1); } 50% { transform: translateX(-50%) translateY(-3px) scale(1.01); } }
-    .title-block { position: absolute; top: 72px; left: 0; right: 0; text-align: center; z-index: 10; }
+    .title-block { position: absolute; top: 118px; left: 0; right: 0; text-align: center; z-index: 10; }
     .title-block h1 { font-size: 18px; font-weight: 700; text-shadow: 0 2px 6px rgba(0,0,0,0.6); margin-bottom: 4px; }
     .title-block .level { font-size: 13px; opacity: 0.9; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
     .progress { position: relative; z-index: 10; margin: 12px 24px 0; height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
@@ -153,7 +153,6 @@
       if (raw) {
         try {
           const p = JSON.parse(raw);
-          // Если новый день — сбрасываем галочки
           if (p.daily && p.daily.date !== todayStr()) {
             p.daily = { date: todayStr(), done: [] };
             localStorage.setItem('alter_progress', JSON.stringify(p));
@@ -196,7 +195,7 @@
       renderTopBar();
     }
 
-    // ============ ЗАГРУЗКА КАСТОМНЫХ ДИСЦИПЛИН ============
+    // ============ КАСТОМНЫЕ ДИСЦИПЛИНЫ ============
     let customDisciplines = [];
     try {
       const c = localStorage.getItem('alter_custom_disciplines');
@@ -265,7 +264,7 @@
       ]
     };
 
-    // ============ ОТРИСОВКА ШАПКИ ============
+    // ============ ШАПКА ============
     document.getElementById('userName').textContent = user.name;
     const profMap = { medicine: 'Медик', dentistry: 'Стоматолог', law: 'Юрист', it: 'IT-специалист', economics: 'Экономист', other: 'Специалист' };
     const roleMap = { school: 'Школьник', student: 'Студент', work: 'Специалист' };
@@ -293,19 +292,16 @@
       levelCounter.textContent = progress.level;
       xpCounter.textContent = progress.xp;
       streakCounter.textContent = progress.streak;
-      // Форма слова «день»
       const n = progress.streak;
       let label = 'дней';
       if (n % 10 === 1 && n % 100 !== 11) label = 'день';
       else if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) label = 'дня';
       streakLabel.textContent = label;
-      // Прогресс-бар
       const xpInLevel = progress.xp % XP_PER_LEVEL;
       progressFill.style.width = xpInLevel + '%';
       progressLabel.textContent = `${xpInLevel} / ${XP_PER_LEVEL} XP до следующего уровня`;
     }
 
-    // ============ ГАЛОЧКИ ПРИВЫЧЕК ============
     function renderHabits() {
       document.querySelectorAll('.habit').forEach(habit => {
         const id = habit.dataset.habit;
